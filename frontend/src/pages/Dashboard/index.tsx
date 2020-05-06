@@ -22,7 +22,7 @@ interface Persons {
   name: string;
   birth_date: Date;
   email: string;
-  phone: string;
+  phone?: string;
 }
 
 interface Appointment {
@@ -45,11 +45,15 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadAppointments(): Promise<void> {
-      const { data } = await api.get<Request>('/appointments');
+      const { data } = await api.get<Appointment[]>('/appointments');
 
-      console.log(data.appointments);
+      console.log(data);
 
-      const parsedAppointments = data.appointments;
+      const parsedAppointments = data.map(appointment => ({
+        ...appointment,
+        formattedInitialDate: formatDate(new Date(appointment.date_start)),
+        formattedFinalDate: formatDate(new Date(appointment.date_end)),
+      }));
 
       await setAppointments(parsedAppointments);
 
@@ -66,16 +70,15 @@ const Dashboard: React.FC = () => {
 
   async function handleAppointments(): Promise<void> {
     try {
-      const { data } = await api.get<Request>('/appointments');
+      const { data } = await api.get<Appointment[]>('/appointments');
 
-      const parsedAppointments = data.appointments.map(appointment => ({
+      const parsedAppointments = data.map(appointment => ({
         ...appointment,
         formattedInitialDate: formatDate(new Date(appointment.date_start)),
         formattedFinalDate: formatDate(new Date(appointment.date_end)),
       }));
 
       await setAppointments(parsedAppointments);
-
       addToast({
         type: 'success',
         title: 'Agendamento adicionado com sucesso.',
@@ -119,25 +122,48 @@ const Dashboard: React.FC = () => {
           <table>
             <tbody>
               {appointments.map(appointment => (
-                <AnimationContainer key={appointment.id}>
-                  <button type="submit">Atualizar</button>
-                  <td>
-                    <h1>Inicio:</h1>
+                <AnimationContainer>
+                  <tr className="AppointmentInfo">
+                    <button type="submit">Atualizar</button>
+                    <td>
+                      <h1>Inicio:</h1>
 
-                    <p>{appointment.date_start}</p>
-                  </td>
-                  <td>
-                    <h1>Encerramento:</h1>
-                    <p>{appointment.date_end}</p>
-                  </td>
-                  <td>
-                    <h1>Quantidade: </h1>
-                    <p>{appointment.quantity}</p>
-                  </td>
-                  <td>
-                    <h1>ID: </h1>
-                    <p>{appointment.id}</p>
-                  </td>
+                      <p>{appointment.date_start}</p>
+                    </td>
+                    <td>
+                      <h1>Encerramento:</h1>
+                      <p>{appointment.date_end}</p>
+                    </td>
+                    <td>
+                      <h1>Local: </h1>
+                      <p>{appointment.locale}</p>
+                    </td>
+                  </tr>
+
+                  <tr style={{ justifyContent: 'center', marginTop: '20px' }}>
+                    <h1>Pessoas agendadas:</h1>
+                  </tr>
+
+                  {appointment.persons.map(person => (
+                    <tr className="PersonInfo" style={{ marginTop: '20px' }}>
+                      <td>
+                        <h1>Nome:</h1>
+                        <p>{person.name}</p>
+                      </td>
+                      <td>
+                        <h1>Data de Nascimento:</h1>
+                        <p>{person.birth_date}</p>
+                      </td>
+                      <td>
+                        <h1>E-mail:</h1>
+                        <p>{person.email}</p>
+                      </td>
+                      <td>
+                        <h1>Telefone</h1>
+                        <p>{person.phone}</p>
+                      </td>
+                    </tr>
+                  ))}
                 </AnimationContainer>
               ))}
             </tbody>

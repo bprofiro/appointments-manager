@@ -121,15 +121,27 @@ export const appearFromLeft = keyframes`
 export const AnimationContainer = styled.tr`
   width: 1120px;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   background: #fff;
   padding: 20px 32px;
   border-radius: 5px;
   margin-bottom: 22px;
 
   animation: ${appearFromLeft} 1s;
+
+  tr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    & + tr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+  }
 
   h1 {
     font-size: 18px;
