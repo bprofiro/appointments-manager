@@ -6,6 +6,7 @@ import uploadConfig from '../config/upload';
 
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
 import ImportAppointmentsService from '../services/ImportAppointmentsService';
+import UpdateAppointmentService from '../services/UpdateAppointmentService';
 
 const appointmentsRouter = Router();
 const upload = multer(uploadConfig);
@@ -50,5 +51,21 @@ appointmentsRouter.post('/filter', async (request, response) => {
     return response.status(400).json({ error: err.message });
   }
 });
+
+appointmentsRouter.put(
+  '/update',
+  upload.single('newAppointment'),
+  async (request, response) => {
+    try {
+      const updateAppointment = new UpdateAppointmentService();
+
+      const appointment = await updateAppointment.execute(request.file.path);
+
+      return response.json(appointment);
+    } catch (err) {
+      return response.status(400).json({ error: err.message });
+    }
+  },
+);
 
 export default appointmentsRouter;

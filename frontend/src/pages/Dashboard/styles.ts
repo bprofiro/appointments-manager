@@ -37,10 +37,16 @@ export const Header = styled.div<ContainerProps>`
         flex-direction: column;
         align-items: center;
 
-        input {
-          width: 175px;
-          height: 35px;
-          border-radius: 5px;
+        div {
+          input {
+            width: 51px;
+            height: 35px;
+            border-radius: 5px;
+
+            & + input {
+              margin-left: 8px;
+            }
+          }
         }
 
         button {
@@ -75,6 +81,7 @@ export const Card = styled.div`
   padding: 22px 32px;
   border-radius: 5px;
   color: #363f5f;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 
   header {
     display: flex;
@@ -127,6 +134,7 @@ export const AnimationContainer = styled.tr`
   padding: 20px 32px;
   border-radius: 5px;
   margin-bottom: 22px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 
   animation: ${appearFromLeft} 1s;
 

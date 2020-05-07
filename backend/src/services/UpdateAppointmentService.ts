@@ -4,8 +4,8 @@ import fs from 'fs';
 
 import AppError from '../errors/AppError';
 
-import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import TemplateParse from '../util/TemplateParse';
 
 interface RequestProps {
   id: number;
@@ -27,21 +27,19 @@ class UpdateAppointmentService {
 
     const parseCSV = contactReadStream.pipe(parsers);
 
-    const appointments: Appointment[] = [];
-
-    let id: number = 0;
-    const dates: Date[] =[];
+    let id = 0;
+    let dates: Date[] = [];
     let lines = 0;
 
     parseCSV.on('data', line => {
-      switch(lines) {
+      switch (lines) {
         case 0:
           id = line;
           break;
+        case 1:
+          dates = line;
+          break;
         default:
-          for (let i = 0; i < ; i += 1) {
-            dates.push(line[i])
-          }
           break;
       }
       lines += 1;
@@ -49,20 +47,35 @@ class UpdateAppointmentService {
 
     await new Promise(resolve => parseCSV.on('end', resolve));
 
-    appointments.push({
-      id: id,
-      initialDate: dates[0],
-      finalDate: dates[1],
-    });
+    const findAppointmentInSameDate = appointmentsRepository.findByDate(
+      dates[0],
+      dates[1],
+    );
 
-    const appointment = appointmentsRepository.findOne(id);
-
-    if (!appointment) {
-      throw new Error('Você não tem um agendamento com esse id');
+    if (findAppointmentInSameDate) {
+      throw new AppError('Você já tem um agendamento com esse horário');
     }
 
+    const insertSql = appointmentsRepository
+      .createQueryBuilder('agendamento')
+      .update()
+      .set({ date_start: dates[0], date_end: dates[1] })
+      .where('id = :id', { id: 93 })
+      .getQueryAndParameters();
+    const sql = insertSql[0].replace(/(@(\d))/g, '{{$2}}');
+    const templateParse = new TemplateParse();
 
+    const result = templateParse
+      .format(sql, {
+        array: insertSql[1].map(param =>
+          param.type !== 'datetime' ? param : param.value.toISOString(),
+        ),
+      })
+      .replace(/(\d{4}-\d{2}-\d{2}( |T)\d{2}:\d{2}:\d{2}(\.000Z)?)/g, "'$1'");
 
+    console.log(result);
+
+    return result;
   }
 }
 

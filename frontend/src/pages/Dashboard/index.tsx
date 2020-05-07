@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
+import { getMonth, getYear } from 'date-fns';
 
+import { number } from 'yup';
 import { useToast } from '../../hooks/toast';
 import formatDate from '../../utils/formatDate';
 
@@ -34,22 +36,34 @@ interface Appointment {
   persons: Persons[];
 }
 
+interface FilterProps {
+  month: number;
+  year: number;
+}
+
 interface Request {
   appointments: Appointment[];
 }
 
 const Dashboard: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Appointment[]>([]);
+  const [month, setMonth] = useState(0);
+  const [year, setYear] = useState(0);
+
+  const data: FilterProps = {
+    month,
+    year,
+  };
 
   const { addToast } = useToast();
 
   useEffect(() => {
     async function loadAppointments(): Promise<void> {
-      const { data } = await api.get<Appointment[]>('/appointments');
+      const response = await api.get<Appointment[]>('/appointments');
 
       console.log(data);
 
-      const parsedAppointments = data.map(appointment => ({
+      const parsedAppointments = response.data.map(appointment => ({
         ...appointment,
         formattedInitialDate: formatDate(new Date(appointment.date_start)),
         formattedFinalDate: formatDate(new Date(appointment.date_end)),
@@ -68,22 +82,54 @@ const Dashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleAppointments(): Promise<void> {
+  async function handleFilter(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<Appointment[] | undefined> {
+    event.preventDefault();
+
     try {
-      const { data } = await api.get<Appointment[]>('/appointments');
+      const response = await api.post<Appointment[]>(
+        'appointments/filter',
+        data,
+      );
 
-      const parsedAppointments = data.map(appointment => ({
-        ...appointment,
-        formattedInitialDate: formatDate(new Date(appointment.date_start)),
-        formattedFinalDate: formatDate(new Date(appointment.date_end)),
-      }));
+      const filterAppointment = await response.data.filter(
+        appointment =>
+          getMonth(appointment.date_start) === data.month &&
+          getYear(appointment.date_start) === data.year,
+      );
 
-      await setAppointments(parsedAppointments);
+      console.log(filterAppointment);
+
       addToast({
         type: 'success',
         title: 'Agendamento adicionado com sucesso.',
         description: 'Você já pode consuta-lo na lista',
       });
+
+      setAppointments(filterAppointment);
+
+      return filterAppointment;
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Erro ao filtrar agendamentos',
+        description: 'Você não tem um agendamento para essa data.',
+      });
+    }
+  }
+
+  async function handleAppointments(): Promise<void> {
+    const data = new FormData();
+
+    try {
+      const completedFiles = uploadedFiles.map(async ({ file }) => {
+        data.append('appointment', file);
+
+        await api.post('/appointments', data);
+      });
+
+      await Promise.all(completedFiles);
     } catch (err) {
       addToast({
         type: 'error',
@@ -91,6 +137,18 @@ const Dashboard: React.FC = () => {
         description: 'Você já tem um agendamento para esse horário.',
       });
     }
+  }
+
+  function submitFile(files: Appointment[]): void {
+    const importedFiles = files.map(file => {
+      return {
+        file,
+        quantity: file.quantity,
+        persons: file.persons,
+        dateStart: file.date_start,
+        dateEnd: file.date_end,
+      };
+    });
   }
 
   return (
@@ -103,9 +161,28 @@ const Dashboard: React.FC = () => {
             </button>
 
             <div>
-              <form>
+              <form onSubmit={handleFilter}>
                 <button type="submit">Consultar Agendamentos</button>
-                <input placeholder="foo" name="foo" type="Month" />
+                <div>
+                  <input
+                    placeholder="Mês"
+                    name="mes"
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={month}
+                    onChange={e => setMonth(e.target.value)}
+                  />
+                  <input
+                    placeholder="Ano"
+                    name="ano"
+                    type="number"
+                    min="2020"
+                    max="2099"
+                    value={year}
+                    onChange={e => setYear(e.target.value)}
+                  />
+                </div>
               </form>
             </div>
           </nav>
@@ -122,8 +199,12 @@ const Dashboard: React.FC = () => {
           <table>
             <tbody>
               {appointments.map(appointment => (
-                <AnimationContainer>
-                  <tr className="AppointmentInfo">
+                <AnimationContainer key={appointment.id}>
+                  <tr style={{ justifyContent: 'center' }}>
+                    <h1>Agendamento:</h1>
+                  </tr>
+
+                  <tr>
                     <button type="submit">Atualizar</button>
                     <td>
                       <h1>Inicio:</h1>
@@ -145,7 +226,7 @@ const Dashboard: React.FC = () => {
                   </tr>
 
                   {appointment.persons.map(person => (
-                    <tr className="PersonInfo" style={{ marginTop: '20px' }}>
+                    <tr style={{ marginTop: '20px' }}>
                       <td>
                         <h1>Nome:</h1>
                         <p>{person.name}</p>

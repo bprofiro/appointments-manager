@@ -5,6 +5,7 @@ import {
   LessThanOrEqual,
   MoreThan,
   LessThan,
+  Raw,
 } from 'typeorm';
 
 import Appointment from '../models/Appointment';
@@ -16,7 +17,19 @@ class AppointmentRepository extends Repository<Appointment> {
     year: number,
   ): Promise<Appointment[] | null> {
     const filterAppointment = await this.find({
-      where: { initialDate: month, finalDate: year },
+      select: ['date_start', 'date_end'],
+      where: {
+        date_start: Raw(
+          () =>
+            `datepart(year, "Agendamento"."DataInicio")=${year} AND
+          datepart(month, "Agendamento"."DataFim")=${month}`,
+        ),
+        date_end: Raw(
+          () =>
+            `datepart(year, "Agendamento"."DataInicio")=${year} AND
+        datepart(month, "Agendamento"."DataFim")=${month}`,
+        ),
+      },
     });
 
     if (!filterAppointment) {
@@ -26,23 +39,20 @@ class AppointmentRepository extends Repository<Appointment> {
     return filterAppointment;
   }
 
-  public async findByDate(
-    initialDate: Date,
-    finalDate: Date,
-  ): Promise<boolean> {
+  public async findByDate(date_start: Date, date_end: Date): Promise<boolean> {
     const findAgendamento = await this.find({
       where: [
         {
-          initialDate: LessThanOrEqual(initialDate),
-          finalDate: MoreThanOrEqual(initialDate),
+          initialDate: LessThanOrEqual(date_start),
+          finalDate: MoreThanOrEqual(date_start),
         },
         {
-          initialDate: LessThanOrEqual(finalDate),
-          finalDate: MoreThanOrEqual(finalDate),
+          initialDate: LessThanOrEqual(date_end),
+          finalDate: MoreThanOrEqual(date_end),
         },
         {
-          initialDate: LessThan(initialDate),
-          finalDate: MoreThan(finalDate),
+          initialDate: LessThan(date_start),
+          finalDate: MoreThan(date_end),
         },
       ],
     });

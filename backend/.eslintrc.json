@@ -23,6 +23,7 @@
     "prettier"
   ],
   "rules": {
+    "prefer-destructuring": "off",
     "no-underscore-dangle": "off",
     "prettier/prettier": "error",
     "@typescript-eslint/camelcase": "off",
