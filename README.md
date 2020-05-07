@@ -1,10 +1,13 @@
+
 <div align="center">
-  <img alt="GoStack" src="https://www.tripletech.com.br/wp-content/uploads/2014/08/logo-triple-160.png" />
+  <img alt="TripleTechLogo" src="https://www.tripletech.com.br/wp-content/uploads/2014/08/logo-triple-160.png" />
 </div>
 
 <h3 align="center">
   Desafio Tripletech: Appointment Manager
 </h3>
+
+![Appointment-Manager](https://user-images.githubusercontent.com/59852846/81341279-a5828300-9087-11ea-9649-33e1a7b3c360.gif)
 
 
 <div>
@@ -23,8 +26,7 @@
 <div>
   <h2> 🖥 Utilizando a aplicação: </h2>
 
-  - Para utlizar essa aplicação, você precisará do [Git](https://git-scm.com), [Node.js v10.16][nodejs] ou maior + [Yarn v1.13][yarn] ou maior
-  instalado no seu computador. E então, na sua linha de comando:
+  - Para utlizar essa aplicação, você precisará do [Git](https://git-scm.com), [Node.js v10.16][nodejs] ou maior + [Yarn v1.13][yarn] ou maior instalado no seu computador. E então, na sua linha de comando:
   ```bash
 # Clonar esse repositório
 $ git clone https://github.com/bprofiro/appointments-callendar
@@ -41,14 +43,34 @@ $ cd backend
 # Iniciar o servidor:
 yarn dev:server;
 
-#Sair da pasta do servidor e entrar na pasta do frontend
-cd ..
+#Abra outro terminal, entre na pasta do repositório novamente e entre no diretório do frontend
 cd frontend
 
 # Iniciar o projeto:
 yarn start
 ```
+</div>
+
+<div>
+  <h2> 📃 Visualizando Query Builders: </h2>
   
+  - Como para esse desafio o banco de dados disponibilizado havia permissão apenas para leitura, o "êxito" e o "erro" dessa aplicação
+  aparecerá em formas de Query Builder que apareceram no terminal em que o servidor está executando.
+  
+  - Para ver a Query Builder para adição de agendamentos, adicione um arquivo .csv na página "Adicionar agendamentos" e olhe o terminal onde o seu servidor está executando.
+  
+  <div align="center">
+   <img alt="AddAppointment" src="https://github.com/bprofiro/assets/blob/master/AddAppointment.png" />
+  </div>
+  
+  - Para ver a Query Builder para atualização de agendamentos, adicione um arquivo .csv na página "Atualizar agendamentos" e olhe o terminal onde o seu servidor está executando.
+  Se o novo horário não conflitar com horários anteriores, a seguinte mensagem aparecerá no seu terminal:
+  
+   <div align="center">
+    <img alt="UpdateAppointment" src="https://github.com/bprofiro/assets/blob/master/UpdateAppointment.png" />
+   </div>
+   
+   - Se ele conflitar, uma mensagem de erro estará no seu terminal também.
 </div>
 
 <div>
