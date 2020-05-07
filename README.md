@@ -1,6 +1,6 @@
-<center>
+<div align="center">
   <img alt="GoStack" src="https://www.tripletech.com.br/wp-content/uploads/2014/08/logo-triple-160.png" />
-</center>
+</div>
 
 <h3 align="center">
   Desafio Tripletech: Appointment Manager
