@@ -41,10 +41,17 @@ appointmentsRouter.post('/filter', async (request, response) => {
     const { month, year } = request.body;
 
     const appointmentsRepository = getCustomRepository(AppointmentsRepository);
-    const filterAppointmentsInSameDate = await appointmentsRepository.filterByDate(
-      month,
-      year,
-    );
+    const appointments = await appointmentsRepository.find({
+      relations: ['persons'],
+    });
+
+    const filterAppointmentsInSameDate = appointments.filter(appointment => {
+      if (
+        appointment.date_start >= new Date(year, month - 1) &&
+        appointment.date_start < new Date(year, month)
+      )
+        return appointment;
+    });
 
     return response.json(filterAppointmentsInSameDate);
   } catch (err) {

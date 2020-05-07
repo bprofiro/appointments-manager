@@ -9,7 +9,7 @@ import Appointment from '../models/Appointment';
 import Person from '../models/Person';
 
 class ImportAppointmentsService {
-  public async execute(filePath: string): Promise<Appointment[]> {
+  public async execute(filePath: string): Promise<string> {
     const templateParse = new TemplateParse();
     const appointmentsRepository = getCustomRepository(AppointmentsRepository);
     const personsRepository = getRepository(Person);
@@ -65,6 +65,7 @@ class ImportAppointmentsService {
         return acc;
       }, [])
       .filter((value, index, self) => self.indexOf(value) === index);
+
     if (personIds.length > 0) {
       console.log(ids.filter(id => personIds.includes(id)));
     } else {
@@ -104,6 +105,8 @@ class ImportAppointmentsService {
         .format(sql_insert, { array: sql_associacao[1] })
         .replace(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/g, "'$1'");
       console.log(result_insert);
+
+      return result_insert;
       // fazer um insert usando o último agendamento
     }
     const createAppointment = appointmentsRepository.create(appointments);
@@ -121,7 +124,7 @@ class ImportAppointmentsService {
 
     await appointmentsRepository.save(createAppointment);
 
-    return createAppointment;
+    return result_insert;
   }
 }
 

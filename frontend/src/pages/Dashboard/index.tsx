@@ -65,32 +65,14 @@ const Dashboard: React.FC = () => {
   }, []);
 
   async function handleFilter(): Promise<Appointment[] | undefined> {
-    try {
-      const response = await api.post<Appointment[]>(
-        'appointments/filter',
-        formRef.current?.getData(),
-      );
+    const response = await api.post<Appointment[]>(
+      'appointments/filter',
+      formRef.current?.getData(),
+    );
 
-      console.log(response.data);
+    setAppointments(response.data);
 
-      addToast({
-        type: 'success',
-        title: 'Agendamento adicionado com sucesso.',
-        description: 'Você já pode consuta-lo na lista',
-      });
-
-      setAppointments(response.data);
-
-      return response.data;
-    } catch (err) {
-      addToast({
-        type: 'error',
-        title: 'Erro ao filtrar agendamentos',
-        description: 'Você não tem um agendamento para essa data.',
-      });
-
-      return undefined;
-    }
+    return response.data;
   }
 
   return (

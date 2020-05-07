@@ -8,6 +8,8 @@ import {
   Raw,
 } from 'typeorm';
 
+import AppError from '../errors/AppError';
+
 import Appointment from '../models/Appointment';
 
 @EntityRepository(Appointment)
@@ -33,7 +35,7 @@ class AppointmentRepository extends Repository<Appointment> {
     });
 
     if (!filterAppointment) {
-      throw new Error('Você não tem nenhum agendamento para essas datas.');
+      throw new AppError('Você não tem nenhum agendamento para essas datas.');
     }
 
     return filterAppointment;

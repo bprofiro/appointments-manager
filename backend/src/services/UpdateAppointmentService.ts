@@ -4,6 +4,7 @@ import fs from 'fs';
 
 import AppError from '../errors/AppError';
 
+import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
 import TemplateParse from '../util/TemplateParse';
 
@@ -14,7 +15,7 @@ interface RequestProps {
 }
 
 class UpdateAppointmentService {
-  public async execute(filePath: string): Promise<RequestProps> {
+  public async execute(filePath: string): Promise<Appointment[]> {
     const appointmentsRepository = getCustomRepository(AppointmentsRepository);
 
     const contactReadStream = fs.createReadStream(filePath);
@@ -27,8 +28,10 @@ class UpdateAppointmentService {
 
     const parseCSV = contactReadStream.pipe(parsers);
 
+    const appointments: Appointment[] = [];
+
     let id = 0;
-    let dates: Date[] = [];
+    const dates: Date[] = [];
     let lines = 0;
 
     parseCSV.on('data', line => {
@@ -53,6 +56,7 @@ class UpdateAppointmentService {
     );
 
     if (findAppointmentInSameDate) {
+      console.log('Você já tem um agendamento com esse horário');
       throw new AppError('Você já tem um agendamento com esse horário');
     }
 
@@ -60,7 +64,7 @@ class UpdateAppointmentService {
       .createQueryBuilder('agendamento')
       .update()
       .set({ date_start: dates[0], date_end: dates[1] })
-      .where('id = :id', { id: 93 })
+      .where('id = :id', { id })
       .getQueryAndParameters();
     const sql = insertSql[0].replace(/(@(\d))/g, '{{$2}}');
     const templateParse = new TemplateParse();
@@ -75,7 +79,11 @@ class UpdateAppointmentService {
 
     console.log(result);
 
-    return result;
+    const createAppointment = appointmentsRepository.create(appointments);
+
+    await appointmentsRepository.save(createAppointment);
+
+    return createAppointment;
   }
 }
 
