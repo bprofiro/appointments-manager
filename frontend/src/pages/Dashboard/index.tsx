@@ -1,11 +1,14 @@
-import React, { useState, useEffect, FormEvent } from 'react';
-import { getMonth, getYear } from 'date-fns';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Form } from '@unform/web';
 
-import { number } from 'yup';
+import { FormHandles } from '@unform/core';
 import { useToast } from '../../hooks/toast';
 import formatDate from '../../utils/formatDate';
 
 import api from '../../service/api';
+
+import Input from '../../components/Input';
 
 import {
   Container,
@@ -14,10 +17,6 @@ import {
   AnimationContainer,
   Header,
 } from './styles';
-
-interface ContainerProps {
-  size?: 'small' | 'large';
-}
 
 interface Persons {
   id: string;
@@ -36,32 +35,15 @@ interface Appointment {
   persons: Persons[];
 }
 
-interface FilterProps {
-  month: number;
-  year: number;
-}
-
-interface Request {
-  appointments: Appointment[];
-}
-
 const Dashboard: React.FC = () => {
-  const [uploadedFiles, setUploadedFiles] = useState<Appointment[]>([]);
-  const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(0);
-
-  const data: FilterProps = {
-    month,
-    year,
-  };
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const formRef = useRef<FormHandles>(null);
 
   const { addToast } = useToast();
 
   useEffect(() => {
     async function loadAppointments(): Promise<void> {
       const response = await api.get<Appointment[]>('/appointments');
-
-      console.log(data);
 
       const parsedAppointments = response.data.map(appointment => ({
         ...appointment,
@@ -82,24 +64,14 @@ const Dashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleFilter(
-    event: FormEvent<HTMLFormElement>,
-  ): Promise<Appointment[] | undefined> {
-    event.preventDefault();
-
+  async function handleFilter(): Promise<Appointment[] | undefined> {
     try {
       const response = await api.post<Appointment[]>(
         'appointments/filter',
-        data,
+        formRef.current?.getData(),
       );
 
-      const filterAppointment = await response.data.filter(
-        appointment =>
-          getMonth(appointment.date_start) === data.month &&
-          getYear(appointment.date_start) === data.year,
-      );
-
-      console.log(filterAppointment);
+      console.log(response.data);
 
       addToast({
         type: 'success',
@@ -107,48 +79,18 @@ const Dashboard: React.FC = () => {
         description: 'Você já pode consuta-lo na lista',
       });
 
-      setAppointments(filterAppointment);
+      setAppointments(response.data);
 
-      return filterAppointment;
+      return response.data;
     } catch (err) {
       addToast({
         type: 'error',
         title: 'Erro ao filtrar agendamentos',
         description: 'Você não tem um agendamento para essa data.',
       });
+
+      return undefined;
     }
-  }
-
-  async function handleAppointments(): Promise<void> {
-    const data = new FormData();
-
-    try {
-      const completedFiles = uploadedFiles.map(async ({ file }) => {
-        data.append('appointment', file);
-
-        await api.post('/appointments', data);
-      });
-
-      await Promise.all(completedFiles);
-    } catch (err) {
-      addToast({
-        type: 'error',
-        title: 'Erro ao adicionar agendamento',
-        description: 'Você já tem um agendamento para esse horário.',
-      });
-    }
-  }
-
-  function submitFile(files: Appointment[]): void {
-    const importedFiles = files.map(file => {
-      return {
-        file,
-        quantity: file.quantity,
-        persons: file.persons,
-        dateStart: file.date_start,
-        dateEnd: file.date_end,
-      };
-    });
   }
 
   return (
@@ -156,34 +98,29 @@ const Dashboard: React.FC = () => {
       <Header size="large">
         <header>
           <nav>
-            <button onClick={handleAppointments} type="submit">
-              Adicionar Agendamentos
-            </button>
+            <Link to="/import">Adicionar Agendamento</Link>
+            <Link to="/update">Atualizar Agendamento</Link>
 
             <div>
-              <form onSubmit={handleFilter}>
+              <Form ref={formRef} onSubmit={handleFilter}>
                 <button type="submit">Consultar Agendamentos</button>
                 <div>
-                  <input
+                  <Input
                     placeholder="Mês"
-                    name="mes"
+                    name="month"
                     type="number"
                     min="1"
                     max="12"
-                    value={month}
-                    onChange={e => setMonth(e.target.value)}
                   />
-                  <input
+                  <Input
                     placeholder="Ano"
-                    name="ano"
+                    name="year"
                     type="number"
                     min="2020"
                     max="2099"
-                    value={year}
-                    onChange={e => setYear(e.target.value)}
                   />
                 </div>
-              </form>
+              </Form>
             </div>
           </nav>
         </header>
@@ -205,7 +142,6 @@ const Dashboard: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <button type="submit">Atualizar</button>
                     <td>
                       <h1>Inicio:</h1>
 

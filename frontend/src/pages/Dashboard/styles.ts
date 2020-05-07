@@ -68,6 +68,20 @@ export const Header = styled.div<ContainerProps>`
       color: ${shade(0.2, '#fff')};
     }
   }
+
+  a {
+    width: 178px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+    transition: opacity 0.2s;
+    border: none;
+    background: transparent;
+
+    &:hover {
+      color: ${shade(0.2, '#fff')};
+    }
+  }
 `;
 
 export const Card = styled.div`

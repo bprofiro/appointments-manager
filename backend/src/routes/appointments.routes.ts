@@ -22,7 +22,7 @@ appointmentsRouter.get('/', async (request, response) => {
 
 appointmentsRouter.post(
   '/',
-  upload.single('appointment'),
+  upload.single('file'),
   async (request, response) => {
     try {
       const importAppointment = new ImportAppointmentsService();
@@ -54,7 +54,7 @@ appointmentsRouter.post('/filter', async (request, response) => {
 
 appointmentsRouter.put(
   '/update',
-  upload.single('newAppointment'),
+  upload.single('file'),
   async (request, response) => {
     try {
       const updateAppointment = new UpdateAppointmentService();
