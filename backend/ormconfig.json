@@ -1,11 +1,11 @@
 {
   "name": "default",
   "type": "mssql",
-  "host": "database.czeyimd7imsc.sa-east-1.rds.amazonaws.com",
+  "host": "",
   "port": 1521,
-  "username": "candidato",
-  "password": "c4nd1d4t0",
-  "database": "Tripletech",
+  "username": "",
+  "password": "",
+  "database": "",
   "entities": [
     "./src/models/*.ts"
   ],
