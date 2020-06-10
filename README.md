@@ -1,10 +1,5 @@
-
-<div align="center">
-  <img alt="TripleTechLogo" src="https://www.tripletech.com.br/wp-content/uploads/2014/08/logo-triple-160.png" />
-</div>
-
 <h3 align="center">
-  Desafio Tripletech: Appointment Manager
+  Appointment Manager
 </h3>
 
 ![Appointment-Manager](https://user-images.githubusercontent.com/59852846/81341279-a5828300-9087-11ea-9649-33e1a7b3c360.gif)
